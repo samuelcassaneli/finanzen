@@ -1,0 +1,5 @@
+{
+  "name": "FinanZen - Offline First PWA",
+  "description": "A sophisticated, offline-first personal finance Progressive Web App (PWA) with a dark theme and glassmorphism UI. It allows users to track transactions, manage accounts, set savings goals, and view financial reports, all while functioning seamlessly without an internet connection.",
+  "requestFramePermissions": []
+}
