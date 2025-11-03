@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDatabase } from './hooks/useDatabase';
 import Dashboard from './components/Dashboard';
 import FloatingMenu from './components/FloatingMenu';
@@ -16,6 +16,32 @@ import type { Account, Transaction, Goal } from './types';
 const App: React.FC = () => {
   const { accounts, transactions, goals, loading, error, handleAddTransaction, handleAddAccount, handleAddGoal } = useDatabase();
   const [currentView, setCurrentView] = useState<View>(View.Dashboard);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      installPrompt.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        }
+        setInstallPrompt(null);
+      });
+    }
+  };
 
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
@@ -24,7 +50,13 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case View.Dashboard:
-        return <Dashboard accounts={accounts} transactions={transactions} goals={goals} />;
+        return <Dashboard 
+                  accounts={accounts} 
+                  transactions={transactions} 
+                  goals={goals} 
+                  onInstallClick={handleInstallClick} 
+                  canInstall={!!installPrompt} 
+               />;
       case View.Transactions:
           return <TransactionsView transactions={transactions} accounts={accounts} />;
       case View.Goals:
@@ -34,7 +66,13 @@ const App: React.FC = () => {
       case View.Reports:
           return <ReportsView transactions={transactions} />;
       default:
-        return <Dashboard accounts={accounts} transactions={transactions} goals={goals} />;
+        return <Dashboard 
+                  accounts={accounts} 
+                  transactions={transactions} 
+                  goals={goals} 
+                  onInstallClick={handleInstallClick} 
+                  canInstall={!!installPrompt} 
+               />;
     }
   };
 

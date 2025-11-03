@@ -22,12 +22,6 @@ export const useDatabase = () => {
       setTransactions(trans.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       setGoals(gls);
 
-      // Seed data if database is empty
-      if (accs.length === 0 && trans.length === 0) {
-        await seedData();
-        await refreshData(); // Re-fetch after seeding
-      }
-
     } catch (e) {
       setError('Failed to load data from the database.');
       console.error(e);
@@ -39,17 +33,6 @@ export const useDatabase = () => {
   useEffect(() => {
     refreshData();
   }, [refreshData]);
-
-  const seedData = async () => {
-    console.log("Seeding initial data...");
-    const newAccountId = await addAccount({ name: 'Checking Account', balance: 5000, type: 'checking' }) as number;
-    await addAccount({ name: 'Savings Account', balance: 15000, type: 'savings' });
-    await addTransaction({ accountId: newAccountId, description: 'Paycheck', amount: 3000, type: 'income', category: 'Salary', date: new Date().toISOString() });
-    await addTransaction({ accountId: newAccountId, description: 'Groceries', amount: 150, type: 'expense', category: 'Food', date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() });
-    await addTransaction({ accountId: newAccountId, description: 'Rent', amount: 1200, type: 'expense', category: 'Housing', date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() });
-    await addTransaction({ accountId: newAccountId, description: 'Internet Bill', amount: 60, type: 'expense', category: 'Utilities', date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() });
-    await addGoal({ name: 'Japan Trip', targetAmount: 4000, currentAmount: 500, deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() });
-  };
   
   const handleAddTransaction = async (transaction: Omit<Transaction, 'id'>) => {
       await addTransaction(transaction);
