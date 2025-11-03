@@ -3,10 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://samuelcassaneli.github.io/finanzen---offline-first-pwa",
+  
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --base=/finanzen/",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
