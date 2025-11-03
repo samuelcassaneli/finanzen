@@ -1,46 +1,19 @@
-
-const CACHE_NAME = 'finanzen-cache-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  // Note: In a real build process, you'd list all your JS, CSS, and image assets here.
-  // For this setup, we cache the essentials. The CDN script for Tailwind will only work online.
-];
+// A minimal service worker to allow the app to be installable.
+// This service worker does not cache any assets, avoiding issues with Firefox.
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
-  );
+  console.log('Service worker installing...');
+  // Skip waiting so the new service worker activates immediately.
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+  console.log('Service worker activating...');
+  // Take control of all pages under its scope immediately.
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', event => {
+  // Do nothing. Let the browser handle all network requests.
+  return;
 });
