@@ -29,14 +29,14 @@ export default defineConfig(({ mode }) => {
             start_url: '.',
             icons: [
               {
-                src: 'https://picsum.photos/192/192?grayscale',
+                src: './vite.svg',
                 sizes: '192x192',
-                type: 'image/png'
+                type: 'image/svg+xml'
               },
               {
-                src: 'https://picsum.photos/512/512?grayscale',
+                src: './vite.svg',
                 sizes: '512x512',
-                type: 'image/png'
+                type: 'image/svg+xml'
               }
             ]
           },
