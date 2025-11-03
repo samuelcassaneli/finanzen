@@ -14,6 +14,7 @@ export interface Transaction {
   type: 'income' | 'expense';
   category: string;
   date: string; // ISO string format
+  status: 'pending' | 'completed';
 }
 
 export interface Goal {
@@ -24,10 +25,16 @@ export interface Goal {
   deadline: string; // ISO string format
 }
 
+export interface Category {
+  id: number;
+  name: string;
+}
+
 export enum View {
   Dashboard,
   Transactions,
   Goals,
   Accounts,
   Reports,
+  Settings,
 }

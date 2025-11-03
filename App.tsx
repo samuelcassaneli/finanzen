@@ -1,34 +1,41 @@
-
 import React, { useState, useEffect } from 'react';
 import { useDatabase } from './hooks/useDatabase';
 import Dashboard from './components/Dashboard';
 import FloatingMenu from './components/FloatingMenu';
 import AddTransactionModal from './components/modals/AddTransactionModal';
+import EditTransactionModal from './components/modals/EditTransactionModal';
 import AddAccountModal from './components/modals/AddAccountModal';
+import EditAccountModal from './components/modals/EditAccountModal';
 import AddGoalModal from './components/modals/AddGoalModal';
+import EditGoalModal from './components/modals/EditGoalModal';
 import TransactionsView from './components/TransactionsView';
 import AccountsView from './components/AccountsView';
 import GoalsView from './components/GoalsView';
 import ReportsView from './components/ReportsView';
+import SettingsView from './components/SettingsView';
 import { View } from './types';
 import type { Account, Transaction, Goal } from './types';
 
 const App: React.FC = () => {
-  const { accounts, transactions, goals, loading, error, handleAddTransaction, handleAddAccount, handleAddGoal } = useDatabase();
+  const { 
+    accounts, transactions, goals, categories, loading, error, 
+    handleAddTransaction, handleUpdateTransaction, handleDeleteTransaction, 
+    handleAddAccount, handleUpdateAccount, handleDeleteAccount, 
+    handleAddGoal, handleUpdateGoal, handleDeleteGoal, 
+    handleRestoreBackup, handleAddCategory, handleDeleteCategory 
+  } = useDatabase();
+  
   const [currentView, setCurrentView] = useState<View>(View.Dashboard);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
+  // PWA Install Prompt Logic
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
       setInstallPrompt(event);
     };
-
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
   const handleInstallClick = () => {
@@ -43,36 +50,75 @@ const App: React.FC = () => {
     }
   };
 
+  // Modal States
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+  const [isEditTxModalOpen, setIsEditTxModalOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isEditAccountModalOpen, setIsEditAccountModalOpen] = useState(false);
+  const [accountToEdit, setAccountToEdit] = useState<Account | null>(null);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [isEditGoalModalOpen, setIsEditGoalModalOpen] = useState(false);
+  const [goalToEdit, setGoalToEdit] = useState<Goal | null>(null);
+
+  const openEditTransactionModal = (tx: Transaction) => {
+    setTransactionToEdit(tx);
+    setIsEditTxModalOpen(true);
+  };
+
+  const openEditAccountModal = (acc: Account) => {
+    setAccountToEdit(acc);
+    setIsEditAccountModalOpen(true);
+  };
+
+  const openEditGoalModal = (goal: Goal) => {
+    setGoalToEdit(goal);
+    setIsEditGoalModalOpen(true);
+  };
 
   const renderView = () => {
     switch (currentView) {
       case View.Dashboard:
-        return <Dashboard 
-                  accounts={accounts} 
-                  transactions={transactions} 
-                  goals={goals} 
-                  onInstallClick={handleInstallClick} 
-                  canInstall={!!installPrompt} 
-               />;
+        return <Dashboard accounts={accounts} transactions={transactions} goals={goals} />;
       case View.Transactions:
-          return <TransactionsView transactions={transactions} accounts={accounts} />;
+          return <TransactionsView 
+                    transactions={transactions} 
+                    accounts={accounts} 
+                    onEdit={openEditTransactionModal}
+                    onDelete={handleDeleteTransaction}
+                    onUpdateStatus={handleUpdateTransaction}
+                 />;
       case View.Goals:
-          return <GoalsView goals={goals} onAddGoal={() => setIsGoalModalOpen(true)} />;
+          return <GoalsView 
+                    goals={goals} 
+                    onAddGoal={() => setIsGoalModalOpen(true)} 
+                    onEdit={openEditGoalModal}
+                    onDelete={handleDeleteGoal}
+                 />;
       case View.Accounts:
-          return <AccountsView accounts={accounts} onAddAccount={() => setIsAccountModalOpen(true)} />;
+          return <AccountsView 
+                    accounts={accounts} 
+                    onAddAccount={() => setIsAccountModalOpen(true)} 
+                    onEdit={openEditAccountModal}
+                    onDelete={handleDeleteAccount}
+                 />;
       case View.Reports:
           return <ReportsView transactions={transactions} />;
+      case View.Settings:
+          return <SettingsView 
+                    accounts={accounts}
+                    transactions={transactions}
+                    goals={goals}
+                    categories={categories}
+                    onInstallClick={handleInstallClick} 
+                    canInstall={!!installPrompt}
+                    onRestore={handleRestoreBackup}
+                    setCurrentView={setCurrentView}
+                    onAddCategory={handleAddCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                 />;
       default:
-        return <Dashboard 
-                  accounts={accounts} 
-                  transactions={transactions} 
-                  goals={goals} 
-                  onInstallClick={handleInstallClick} 
-                  canInstall={!!installPrompt} 
-               />;
+        return <Dashboard accounts={accounts} transactions={transactions} goals={goals} />;
     }
   };
 
@@ -108,26 +154,43 @@ const App: React.FC = () => {
       {isTxModalOpen && (
         <AddTransactionModal 
             onClose={() => setIsTxModalOpen(false)} 
-            onAddTransaction={(newTx: Omit<Transaction, 'id'>) => {
-                handleAddTransaction(newTx);
-            }}
-            accountId={accounts[0]?.id || 1} // Default to first account
+            onAddTransaction={handleAddTransaction}
+            accountId={accounts[0]?.id || 1}
+            categories={categories}
+        />
+      )}
+      {isEditTxModalOpen && transactionToEdit && (
+        <EditTransactionModal 
+            onClose={() => setIsEditTxModalOpen(false)} 
+            onUpdateTransaction={handleUpdateTransaction}
+            transaction={transactionToEdit}
+            categories={categories}
         />
       )}
       {isAccountModalOpen && (
         <AddAccountModal
             onClose={() => setIsAccountModalOpen(false)}
-            onAddAccount={(newAccount: Omit<Account, 'id'>) => {
-                handleAddAccount(newAccount);
-            }}
+            onAddAccount={handleAddAccount}
+        />
+      )}
+      {isEditAccountModalOpen && accountToEdit && (
+        <EditAccountModal
+            onClose={() => setIsEditAccountModalOpen(false)}
+            onUpdateAccount={handleUpdateAccount}
+            account={accountToEdit}
         />
       )}
       {isGoalModalOpen && (
         <AddGoalModal
             onClose={() => setIsGoalModalOpen(false)}
-            onAddGoal={(newGoal: Omit<Goal, 'id'>) => {
-                handleAddGoal(newGoal);
-            }}
+            onAddGoal={handleAddGoal}
+        />
+      )}
+      {isEditGoalModalOpen && goalToEdit && (
+        <EditGoalModal
+            onClose={() => setIsEditGoalModalOpen(false)}
+            onUpdateGoal={handleUpdateGoal}
+            goal={goalToEdit}
         />
       )}
        <style>{`

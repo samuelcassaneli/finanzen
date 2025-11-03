@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlusIcon, ReceiptIcon, TargetIcon, ChartIcon, WalletIcon } from './icons';
+import { PlusIcon, ReceiptIcon, TargetIcon, ChartIcon, WalletIcon, SettingsIcon } from './icons';
 import { View } from '../types';
 
 interface FloatingMenuProps {
@@ -16,6 +16,7 @@ const FloatingMenu: React.FC<FloatingMenuProps> = ({ onAddTransaction, setCurren
     { icon: <WalletIcon className="w-6 h-6" />, label: 'Accounts', action: () => setCurrentView(View.Accounts) },
     { icon: <TargetIcon className="w-6 h-6" />, label: 'Goals', action: () => setCurrentView(View.Goals) },
     { icon: <ChartIcon className="w-6 h-6" />, label: 'Reports', action: () => setCurrentView(View.Reports) },
+    { icon: <SettingsIcon className="w-6 h-6" />, label: 'Settings', action: () => setCurrentView(View.Settings) },
   ];
 
   return (

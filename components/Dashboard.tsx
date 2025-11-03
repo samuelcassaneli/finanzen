@@ -8,52 +8,19 @@ interface DashboardProps {
   accounts: Account[];
   transactions: Transaction[];
   goals: Goal[];
-  onInstallClick: () => void;
-  canInstall: boolean;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ accounts, transactions, goals, onInstallClick, canInstall }) => {
+const Dashboard: React.FC<DashboardProps> = ({ accounts, transactions, goals }) => {
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-  };
-
-  const handleBackup = () => {
-    const dataToBackup = {
-      accounts,
-      transactions,
-      goals,
-      backupDate: new Date().toISOString(),
-    };
-
-    const jsonString = JSON.stringify(dataToBackup, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `finanzen-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
   
   const recentTransactions = transactions.slice(0, 5);
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-center gap-4 mb-6">
-        {canInstall && (
-          <button onClick={onInstallClick} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-            Instalar App
-          </button>
-        )}
-        <button onClick={handleBackup} className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-          Fazer Backup
-        </button>
-      </div>
-
       <GlassCard className="text-center">
         <h2 className="text-lg font-semibold text-gray-300">Total Balance</h2>
         <p className="text-4xl font-bold text-cyan-400 tracking-tight">{formatCurrency(totalBalance)}</p>

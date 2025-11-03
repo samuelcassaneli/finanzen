@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { Goal } from '../types';
 import GlassCard from './GlassCard';
@@ -7,13 +6,22 @@ import { PlusIcon, TargetIcon } from './icons';
 interface GoalsViewProps {
   goals: Goal[];
   onAddGoal: () => void;
+  onEdit: (goal: Goal) => void;
+  onDelete: (id: number) => void;
 }
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 };
 
-const GoalsView: React.FC<GoalsViewProps> = ({ goals, onAddGoal }) => {
+const GoalsView: React.FC<GoalsViewProps> = ({ goals, onAddGoal, onEdit, onDelete }) => {
+
+  const handleDelete = (goal: Goal) => {
+    if (window.confirm(`Are you sure you want to delete the goal "${goal.name}"?`)) {
+      onDelete(goal.id);
+    }
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
@@ -34,9 +42,13 @@ const GoalsView: React.FC<GoalsViewProps> = ({ goals, onAddGoal }) => {
                                 <TargetIcon className="w-6 h-6 text-cyan-400" />
                                 <h3 className="text-xl font-semibold text-white">{goal.name}</h3>
                             </div>
-                            <p className="text-gray-300 text-sm">
-                                Deadline: {new Date(goal.deadline).toLocaleDateString()}
-                            </p>
+                            <div className="flex items-center gap-4">
+                                <p className="text-gray-300 text-sm">
+                                    Deadline: {new Date(goal.deadline).toLocaleDateString()}
+                                </p>
+                                <button onClick={() => onEdit(goal)} className="text-xs text-gray-300 hover:text-white transition">Edit</button>
+                                <button onClick={() => handleDelete(goal)} className="text-xs text-red-500 hover:text-red-400 transition">Delete</button>
+                            </div>
                         </div>
                         <div className="w-full bg-gray-700 rounded-full h-4 my-3">
                             <div className="bg-cyan-500 h-4 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ width: `${Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)}%` }}>

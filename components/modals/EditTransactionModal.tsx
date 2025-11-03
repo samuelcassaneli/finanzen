@@ -3,25 +3,19 @@ import GlassCard from '../GlassCard';
 import { XIcon } from '../icons';
 import type { Transaction, Category } from '../../types';
 
-interface AddTransactionModalProps {
+interface EditTransactionModalProps {
   onClose: () => void;
-  onAddTransaction: (transaction: Omit<Transaction, 'id' | 'accountId'> & {accountId: number}) => void;
-  accountId: number;
+  onUpdateTransaction: (transaction: Transaction) => void;
+  transaction: Transaction;
   categories: Category[];
 }
 
-const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose, onAddTransaction, accountId, categories }) => {
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [type, setType] = useState<'income' | 'expense'>('expense');
-  const [category, setCategory] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-
-  useEffect(() => {
-    if (categories.length > 0) {
-      setCategory(categories[0].name);
-    }
-  }, [categories]);
+const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ onClose, onUpdateTransaction, transaction, categories }) => {
+  const [description, setDescription] = useState(transaction.description);
+  const [amount, setAmount] = useState(String(transaction.amount));
+  const [type, setType] = useState<'income' | 'expense'>(transaction.type);
+  const [category, setCategory] = useState(transaction.category);
+  const [date, setDate] = useState(new Date(transaction.date).toISOString().split('T')[0]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +23,8 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose, onAd
       alert('Please fill all fields');
       return;
     }
-    onAddTransaction({
-      accountId,
+    onUpdateTransaction({
+      ...transaction,
       description,
       amount: parseFloat(amount),
       type,
@@ -46,7 +40,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose, onAd
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in-fast">
       <GlassCard className="w-full max-w-md mx-4">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">Add Transaction</h2>
+          <h2 className="text-2xl font-bold text-white">Edit Transaction</h2>
           <button onClick={onClose} className="text-gray-300 hover:text-white transition">
             <XIcon className="w-6 h-6" />
           </button>
@@ -83,7 +77,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose, onAd
                 <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`${commonInputClasses} `} />
             </div>
             <button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-105">
-                Add Transaction
+                Update Transaction
             </button>
         </form>
       </GlassCard>
@@ -91,4 +85,4 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose, onAd
   );
 };
 
-export default AddTransactionModal;
+export default EditTransactionModal;

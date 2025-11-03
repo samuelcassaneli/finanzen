@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { Account } from '../types';
 import GlassCard from './GlassCard';
@@ -7,6 +6,8 @@ import { PlusIcon } from './icons';
 interface AccountsViewProps {
   accounts: Account[];
   onAddAccount: () => void;
+  onEdit: (account: Account) => void;
+  onDelete: (id: number) => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -20,7 +21,14 @@ const AccountTypeLabels: Record<Account['type'], string> = {
     investment: 'Investment'
 }
 
-const AccountsView: React.FC<AccountsViewProps> = ({ accounts, onAddAccount }) => {
+const AccountsView: React.FC<AccountsViewProps> = ({ accounts, onAddAccount, onEdit, onDelete }) => {
+
+  const handleDelete = (account: Account) => {
+    if (window.confirm(`Are you sure you want to delete the account "${account.name}"? This action cannot be undone.`)) {
+      onDelete(account.id);
+    }
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
@@ -44,6 +52,10 @@ const AccountsView: React.FC<AccountsViewProps> = ({ accounts, onAddAccount }) =
                             <p className={`text-lg font-semibold ${account.balance >= 0 ? 'text-cyan-300' : 'text-red-400'}`}>
                                 {formatCurrency(account.balance)}
                             </p>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-white/10 flex justify-end gap-4">
+                            <button onClick={() => onEdit(account)} className="text-sm text-gray-300 hover:text-white transition">Edit</button>
+                            <button onClick={() => handleDelete(account)} className="text-sm text-red-500 hover:text-red-400 transition">Delete</button>
                         </div>
                     </GlassCard>
                 ))}
