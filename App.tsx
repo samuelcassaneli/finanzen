@@ -1,3 +1,4 @@
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import React, { useState, useEffect } from 'react';
 import { useDatabase } from './hooks/useDatabase';
 import Dashboard from './components/Dashboard';
@@ -26,27 +27,30 @@ const App: React.FC = () => {
   } = useDatabase();
   
   const [currentView, setCurrentView] = useState<View>(View.Dashboard);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
 
-  // PWA Install Prompt Logic
+  // PWA Install Logic using vite-plugin-pwa
+  const {
+    offlineReady,
+    needRefresh,
+    updateServiceWorker,
+    pwaInstallPrompt,
+    pwaInstall,
+  } = useRegisterSW({
+    onRegistered(r) {
+      console.log('Service Worker registered:', r);
+    },
+    onRegisterError(error) {
+      console.error('Service Worker registration error:', error);
+    },
+  });
+
   useEffect(() => {
-    const handleBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setInstallPrompt(event);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, []);
+    console.log('PWA Install Prompt available:', !!pwaInstallPrompt);
+  }, [pwaInstallPrompt]);
 
-  const handleInstallClick = () => {
-    if (installPrompt) {
-      installPrompt.prompt();
-      installPrompt.userChoice.then((choiceResult: { outcome: string }) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
-        }
-        setInstallPrompt(null);
-      });
+  const handleInstallClick = async () => {
+    if (pwaInstall) {
+      await pwaInstall();
     }
   };
 
@@ -111,7 +115,7 @@ const App: React.FC = () => {
                     goals={goals}
                     categories={categories}
                     onInstallClick={handleInstallClick} 
-                    canInstall={!!installPrompt}
+                    canInstall={!!pwaInstallPrompt}
                     onRestore={handleRestoreBackup}
                     setCurrentView={setCurrentView}
                     onAddCategory={handleAddCategory}
