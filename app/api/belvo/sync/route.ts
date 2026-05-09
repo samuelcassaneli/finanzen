@@ -3,8 +3,12 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { belvo } from "@/lib/belvo";
 import { syncLink } from "@/lib/sync";
+import type { Database } from "@/lib/supabase/types";
 
 export const runtime = "nodejs";
+
+type LinkInsert = Database["public"]["Tables"]["financial_links"]["Insert"];
+type LinkRow = Database["public"]["Tables"]["financial_links"]["Row"];
 
 const Body = z.object({
   belvo_link_id: z.string().min(1),
@@ -13,7 +17,9 @@ const Body = z.object({
 
 export async function POST(req: Request) {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
@@ -21,11 +27,13 @@ export async function POST(req: Request) {
   const { belvo_link_id, institution } = parsed.data;
 
   // Ensure we have a financial_links row for this user + belvo link.
-  let { data: link } = await supabase
+  const { data: existing } = await supabase
     .from("financial_links")
     .select("id, last_sync_at")
     .eq("belvo_link_id", belvo_link_id)
     .maybeSingle();
+
+  let link: Pick<LinkRow, "id" | "last_sync_at"> | null = existing;
 
   if (!link) {
     let inst = institution ?? "unknown";
@@ -35,16 +43,20 @@ export async function POST(req: Request) {
     } catch {
       // fall through with provided / unknown institution
     }
+
+    const payload: LinkInsert = {
+      user_id: user.id,
+      belvo_link_id,
+      institution: inst,
+      institution_display_name: inst,
+    };
+
     const { data: created, error } = await supabase
       .from("financial_links")
-      .insert({
-        user_id: user.id,
-        belvo_link_id,
-        institution: inst,
-        institution_display_name: inst,
-      })
+      .insert(payload)
       .select("id, last_sync_at")
       .single();
+
     if (error || !created) {
       return NextResponse.json({ error: error?.message ?? "insert failed" }, { status: 500 });
     }

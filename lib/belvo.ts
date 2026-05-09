@@ -125,6 +125,6 @@ export function normalizeBelvoTx(
     status: tx.status,
     occurred_at: tx.value_date,
     posted_at: tx.accounting_date ?? null,
-    raw: tx as unknown as Record<string, unknown>,
+    raw: tx as unknown as import("@/lib/supabase/types").Json,
   };
 }
