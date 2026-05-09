@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const next = search.get("next") ?? "/dashboard";
@@ -33,7 +33,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
+    <>
       <h1 className="mb-6 text-2xl font-semibold">
         {mode === "signin" ? "Entrar" : "Criar conta"}
       </h1>
@@ -71,6 +71,16 @@ export default function LoginPage() {
       >
         {mode === "signin" ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar"}
       </button>
+    </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
+      <Suspense>
+        <LoginForm />
+      </Suspense>
     </main>
   );
 }
