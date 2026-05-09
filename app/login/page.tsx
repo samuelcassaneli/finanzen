@@ -10,7 +10,6 @@ function LoginForm() {
   const next = search.get("next") ?? "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,13 +18,10 @@ function LoginForm() {
     setErr(null);
     setLoading(true);
     const supabase = createClient();
-    const { error } =
-      mode === "signin"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      setErr(error.message);
+      setErr("E-mail ou senha incorretos.");
       return;
     }
     router.replace(next);
@@ -34,43 +30,36 @@ function LoginForm() {
 
   return (
     <>
-      <h1 className="mb-6 text-2xl font-semibold">
-        {mode === "signin" ? "Entrar" : "Criar conta"}
-      </h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Finzen</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Sua vida financeira organizada.</p>
+      </div>
       <form onSubmit={submit} className="flex flex-col gap-3">
         <input
           type="email"
           required
-          placeholder="email@exemplo.com"
+          placeholder="E-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+          className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary"
         />
         <input
           type="password"
           required
-          minLength={6}
-          placeholder="senha"
+          placeholder="Senha"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+          className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary"
         />
         {err && <p className="text-sm text-red-600">{err}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          className="mt-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
         >
-          {loading ? "..." : mode === "signin" ? "Entrar" : "Cadastrar"}
+          {loading ? "Entrando..." : "Entrar"}
         </button>
       </form>
-      <button
-        type="button"
-        onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-        className="mt-4 text-sm text-muted-foreground hover:underline"
-      >
-        {mode === "signin" ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar"}
-      </button>
     </>
   );
 }
