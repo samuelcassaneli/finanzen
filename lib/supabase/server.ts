@@ -1,7 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createClient as createAdminClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { ResponseCookies } from "next/dist/server/web/spec-extension/cookies";
 import type { Database } from "@/lib/supabase/types";
+
+type CookieEntry = {
+  name: string;
+  value: string;
+  options?: Parameters<ResponseCookies["set"]>[2];
+};
 
 export function createClient(): SupabaseClient<Database> {
   const cookieStore = cookies();
@@ -11,7 +18,7 @@ export function createClient(): SupabaseClient<Database> {
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
-        setAll: (toSet) => {
+        setAll: (toSet: CookieEntry[]) => {
           try {
             toSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
           } catch {
