@@ -1,9 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { createClient as createAdminClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 
-export function createClient() {
+export function createClient(): SupabaseClient<Database> {
   const cookieStore = cookies();
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,10 +20,10 @@ export function createClient() {
         },
       },
     },
-  );
+  ) as unknown as SupabaseClient<Database>;
 }
 
-export function createServiceRoleClient() {
+export function createServiceRoleClient(): SupabaseClient<Database> {
   return createAdminClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
