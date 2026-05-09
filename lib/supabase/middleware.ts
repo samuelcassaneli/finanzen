@@ -1,6 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { ResponseCookies } from "next/dist/server/web/spec-extension/cookies";
 import type { Database } from "@/lib/supabase/types";
+
+type CookieEntry = {
+  name: string;
+  value: string;
+  options?: Parameters<ResponseCookies["set"]>[2];
+};
 
 const PUBLIC_PATHS = ["/", "/login", "/auth/callback"];
 
@@ -13,7 +20,7 @@ export async function updateSession(request: NextRequest) {
     {
       cookies: {
         getAll: () => request.cookies.getAll(),
-        setAll: (toSet) => {
+        setAll: (toSet: CookieEntry[]) => {
           toSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({ request });
           toSet.forEach(({ name, value, options }) =>
